@@ -17,6 +17,11 @@ use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 use Magento\Eav\Setup\EavSetup;
 use Magento\Catalog\Api\CategoryLinkManagementInterface;
+use Magento\Setup\Exception;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\StateException;
 
 class CreateSimpleProduct implements DataPatchInterface
 {
@@ -84,8 +89,7 @@ class CreateSimpleProduct implements DataPatchInterface
         SourceItemsSaveInterface $sourceItemsSaveInterface,
         State $appState,
         CategoryLinkManagementInterface $categoryLink
-    )
-    {
+    ) {
         $this->appState = $appState;
         $this->productRepository = $productRepository;
         $this->productFactory = $productFactory;
@@ -138,12 +142,12 @@ class CreateSimpleProduct implements DataPatchInterface
         $product = $this->productRepository->save($product);
 
         // create a source item
-        $sourceItemFactory = $this->sourceItemFactory->create();
-        $sourceItemFactory->setSourceCode('default');
-        $sourceItemFactory->setQuantity(50);
-        $sourceItemFactory->setSku($product->getSku());
-        $sourceItemFactory->setStatus(SourceItemInterface::STATUS_IN_STOCK);
-        $this->sourceItems[] = $sourceItemFactory;
+        $sourceItem = $this->sourceItemFactory->create();
+        $sourceItem->setSourceCode('default');
+        $sourceItem->setQuantity(50);
+        $sourceItem->setSku($product->getSku());
+        $sourceItem->setStatus(SourceItemInterface::STATUS_IN_STOCK);
+        $this->sourceItems[] = $sourceItem;
         $this->sourceItemsSaveInterface->execute($this->sourceItems);
 
         $this->categoryLink->assignProductToCategories($product->getSku(), [2]);
